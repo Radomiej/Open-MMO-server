@@ -13,11 +13,13 @@ import pl.radomiej.mmo.actions.AttackAction;
 import pl.radomiej.mmo.actions.AxisInputAction;
 import pl.radomiej.mmo.actions.CreateCharacterAction;
 import pl.radomiej.mmo.actions.MoveToAction;
+import pl.radomiej.mmo.actions.RecoveryAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.executors.AttackActionExecutor;
 import pl.radomiej.mmo.actions.executors.AxisInputActionExecutor;
 import pl.radomiej.mmo.actions.executors.CreateCharacterActionExecutor;
 import pl.radomiej.mmo.actions.executors.MoveToActionExecutor;
+import pl.radomiej.mmo.actions.executors.RecoveryActionExecutor;
 import pl.radomiej.mmo.actions.executors.RemoveCharacterActionExecutor;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.models.NetworkObject;
@@ -39,6 +41,7 @@ public enum BasicGameEngine {
 		executors.put(MoveToAction.class, new MoveToActionExecutor());
 		executors.put(AxisInputAction.class, new AxisInputActionExecutor());
 		executors.put(AttackAction.class, new AttackActionExecutor());
+		executors.put(RecoveryAction.class, new RecoveryActionExecutor());
 
 		timer = new Timer();
 		timer.schedule(new TimerTask() {
@@ -81,7 +84,7 @@ public enum BasicGameEngine {
 	}
 
 	public NetworkObject findObjectById(int objectId) {
-		synchronized (BasicGameEngine.INSTANCE.objects) {
+		synchronized (objects) {
 			for (NetworkObject networkObject : objects) {
 				if (networkObject.id == objectId) {
 					return networkObject;
@@ -99,13 +102,22 @@ public enum BasicGameEngine {
 
 	public void removeObject(int removeObjectId) {
 		NetworkObject findObject = findObjectById(removeObjectId);
-		synchronized (BasicGameEngine.INSTANCE.objects) {
+		synchronized (objects) {
 			objects.remove(findObject);
 		}
 	}
 
 	public List<NetworkObject> getObjects() {
 		return objects;
+	}
+
+	public void reset() {
+		synchronized (objects) {
+			objects.clear();
+		}
+		synchronized (actions) {
+			actions.clear();
+		}
 	}
 
 }

@@ -184,7 +184,7 @@ public enum BasicNetworkEngine {
 		byte[] data = udpEventDatagram.toBytes();
 		IoBuffer writeBuffer = IoBuffer.wrap(data);
 
-//		System.out.println("Wysy³am RemoveEvent: " + udpEventDatagram);
+		System.out.println("Wysy³am RemoveEvent: " + udpEventDatagram);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
@@ -238,6 +238,12 @@ public enum BasicNetworkEngine {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
 			}
+		}
+	}
+
+	public int sessionsCount() {
+		synchronized (sessions) {
+			return sessions.size();
 		}
 	}
 

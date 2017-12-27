@@ -21,6 +21,8 @@ import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.AxisInputActionFactory;
 import pl.radomiej.mmo.actions.factory.CreateCharacterActionFactory;
 import pl.radomiej.mmo.actions.factory.MoveToActionFactory;
+import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
+import pl.radomiej.mmo.actions.factory.RemoveCharacterActionFactory;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
@@ -35,6 +37,8 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		actionFactories.put((byte) 3, new AxisInputActionFactory());
 		actionFactories.put((byte) 5, new MoveToActionFactory());
 		actionFactories.put((byte) 6, new AttackActionFactory());
+		actionFactories.put((byte) 7, new RecoveryActionFactory());
+		actionFactories.put((byte) 255, new RemoveCharacterActionFactory());
 	}
 
 	@Override
@@ -73,18 +77,6 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 
 	}
 
-	private int getInt(IoBuffer buffer) {
-		byte[] ints = new byte[4];
-		ints[3] = buffer.get();
-		ints[2] = buffer.get();
-		ints[1] = buffer.get();
-		ints[0] = buffer.get();
-
-		ByteBuffer byteBuffer = ByteBuffer.wrap(ints);
-		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		return byteBuffer.getInt();
-	}
-
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		SocketAddress remoteAddress = session.getRemoteAddress();
@@ -93,5 +85,9 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		
 		RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
 		BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
+		
+		if(BasicNetworkEngine.INSTANCE.sessionsCount() == 0){
+			BasicGameEngine.INSTANCE.reset();
+		}
 	}
 }
