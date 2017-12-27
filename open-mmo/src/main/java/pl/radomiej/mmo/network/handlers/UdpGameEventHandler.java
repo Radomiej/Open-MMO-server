@@ -16,7 +16,8 @@ import pl.radomiej.mmo.ActionFactory;
 import pl.radomiej.mmo.BasicGameEngine;
 import pl.radomiej.mmo.BasicNetworkEngine;
 import pl.radomiej.mmo.actions.CreateCharacterAction;
-import pl.radomiej.mmo.actions.RemovePlayerAction;
+import pl.radomiej.mmo.actions.RemoveCharacterAction;
+import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.AxisInputActionFactory;
 import pl.radomiej.mmo.actions.factory.CreateCharacterActionFactory;
 import pl.radomiej.mmo.actions.factory.MoveToActionFactory;
@@ -33,6 +34,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		actionFactories.put((byte) 2, new CreateCharacterActionFactory());
 		actionFactories.put((byte) 3, new AxisInputActionFactory());
 		actionFactories.put((byte) 5, new MoveToActionFactory());
+		actionFactories.put((byte) 6, new AttackActionFactory());
 	}
 
 	@Override
@@ -43,7 +45,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		System.out.println("sessionCreated: " + remoteAddress);
 
 		CreateCharacterAction createPlayerAction = new CreateCharacterAction(session, 0);
-		BasicGameEngine.INSTANCE.actions.add(createPlayerAction);
+		BasicGameEngine.INSTANCE.addGameAction(createPlayerAction);
 	}
 
 	@Override
@@ -63,9 +65,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 			if (actionFactory != null) {
 				GameAction gameAction = actionFactory.createGameActionFromNetworkEvent(datagram, session);
 				if (gameAction != null) {
-					synchronized (BasicGameEngine.INSTANCE.actions) {
-						BasicGameEngine.INSTANCE.actions.add(gameAction);
-					}
+					BasicGameEngine.INSTANCE.addGameAction(gameAction);
 				}
 			}
 
@@ -91,7 +91,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		BasicNetworkEngine.INSTANCE.removeSession(session);
 		System.out.println("sessionClosed: " + remoteAddress);
 		
-		RemovePlayerAction removePlayerAction = new RemovePlayerAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
-		BasicGameEngine.INSTANCE.actions.add(removePlayerAction);
+		RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
+		BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
 	}
 }

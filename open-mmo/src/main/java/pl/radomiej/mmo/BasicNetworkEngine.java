@@ -229,4 +229,16 @@ public enum BasicNetworkEngine {
 		return time;
 	}
 
+	public void sendEvent(int receipent, byte[] dataArray) {
+
+		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, (byte) 1, dataArray.length, dataArray);
+		byte[] data = udpEventDatagram.toBytes();
+		IoBuffer writeBuffer = IoBuffer.wrap(data);
+		synchronized (sessions) {
+			for (IoSession session : sessions) {
+				session.write(writeBuffer);
+			}
+		}
+	}
+
 }

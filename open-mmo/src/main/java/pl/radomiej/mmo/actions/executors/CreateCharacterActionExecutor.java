@@ -14,6 +14,7 @@ public class CreateCharacterActionExecutor implements ActionExecutor {
 		CharacterObject player = new CharacterObject();
 		CreateCharacterAction createPlayerAction = (CreateCharacterAction) gameAction;
 
+		player.hp = player.hpMax = 100;
 		player.kind = createPlayerAction.kind;
 		player.x = createPlayerAction.x;
 		player.y = createPlayerAction.y;

@@ -4,10 +4,10 @@ import org.apache.mina.core.session.IoSession;
 
 import pl.radomiej.mmo.models.GameAction;
 
-public class RemovePlayerAction extends GameAction {
+public class RemoveCharacterAction extends GameAction {
 	public int removeObjectId;
 	
-	public RemovePlayerAction(int removeObjectId) {
+	public RemoveCharacterAction(int removeObjectId) {
 		this.removeObjectId = removeObjectId;
 	}
 }

@@ -9,10 +9,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import pl.radomiej.mmo.actions.AttackAction;
 import pl.radomiej.mmo.actions.AxisInputAction;
 import pl.radomiej.mmo.actions.CreateCharacterAction;
 import pl.radomiej.mmo.actions.MoveToAction;
-import pl.radomiej.mmo.actions.RemovePlayerAction;
+import pl.radomiej.mmo.actions.RemoveCharacterAction;
+import pl.radomiej.mmo.actions.executors.AttackActionExecutor;
 import pl.radomiej.mmo.actions.executors.AxisInputActionExecutor;
 import pl.radomiej.mmo.actions.executors.CreateCharacterActionExecutor;
 import pl.radomiej.mmo.actions.executors.MoveToActionExecutor;
@@ -25,7 +27,7 @@ public enum BasicGameEngine {
 	INSTANCE;
 
 	private List<NetworkObject> objects = Collections.synchronizedList(new ArrayList<NetworkObject>());
-	public List<GameAction> actions = Collections.synchronizedList(new ArrayList<GameAction>());
+	private List<GameAction> actions = Collections.synchronizedList(new ArrayList<GameAction>());
 
 	private Map<Class<? extends GameAction>, ActionExecutor> executors = new HashMap<>();
 
@@ -33,9 +35,10 @@ public enum BasicGameEngine {
 
 	public void start() {
 		executors.put(CreateCharacterAction.class, new CreateCharacterActionExecutor());
-		executors.put(RemovePlayerAction.class, new RemoveCharacterActionExecutor());
+		executors.put(RemoveCharacterAction.class, new RemoveCharacterActionExecutor());
 		executors.put(MoveToAction.class, new MoveToActionExecutor());
 		executors.put(AxisInputAction.class, new AxisInputActionExecutor());
+		executors.put(AttackAction.class, new AttackActionExecutor());
 
 		timer = new Timer();
 		timer.schedule(new TimerTask() {
@@ -52,8 +55,10 @@ public enum BasicGameEngine {
 		List<GameAction> toRemove = new LinkedList<>();
 
 		synchronized (actions) {
-			for (GameAction gameAction : actions) {
-//				System.out.println("Wykonuje akcje: " + gameAction.getClass().getSimpleName());
+			for(int x = 0; x < actions.size(); x++){
+				GameAction gameAction = actions.get(x);
+				// System.out.println("Wykonuje akcje: " +
+				// gameAction.getClass().getSimpleName());
 				ActionExecutor actionExecutor = executors.get(gameAction.getClass());
 				if (actionExecutor == null) {
 					toRemove.add(gameAction);
@@ -70,7 +75,9 @@ public enum BasicGameEngine {
 	}
 
 	public void addGameAction(GameAction gameAction) {
-		actions.add(gameAction);
+		synchronized (actions) {
+			actions.add(gameAction);
+		}
 	}
 
 	public NetworkObject findObjectById(int objectId) {
@@ -83,13 +90,13 @@ public enum BasicGameEngine {
 		}
 		return null;
 	}
-	
+
 	public void addObject(NetworkObject addObject) {
 		synchronized (BasicGameEngine.INSTANCE.objects) {
 			objects.add(addObject);
 		}
 	}
-	
+
 	public void removeObject(int removeObjectId) {
 		NetworkObject findObject = findObjectById(removeObjectId);
 		synchronized (BasicGameEngine.INSTANCE.objects) {
