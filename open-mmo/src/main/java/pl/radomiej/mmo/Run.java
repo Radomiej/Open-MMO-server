@@ -41,6 +41,14 @@ public class Run {
 		
 		DatagramSessionConfig dcfg = acceptor.getSessionConfig();
 		dcfg.setReuseAddress(true);
+		dcfg.setReaderIdleTime(1);
+		dcfg.setBothIdleTime(1);
+		dcfg.setWriterIdleTime(1);
+		dcfg.setWriteTimeout(1);
+		
+		dcfg.setCloseOnPortUnreachable(true);
+		
+		
 		acceptor.bind(new InetSocketAddress(PORT));		
 	}
 

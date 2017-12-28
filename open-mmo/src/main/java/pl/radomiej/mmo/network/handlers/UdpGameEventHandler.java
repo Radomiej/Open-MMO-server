@@ -21,6 +21,7 @@ import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.AxisInputActionFactory;
 import pl.radomiej.mmo.actions.factory.CreateCharacterActionFactory;
 import pl.radomiej.mmo.actions.factory.MoveToActionFactory;
+import pl.radomiej.mmo.actions.factory.PhysicUpdateActionFactory;
 import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.actions.factory.RemoveCharacterActionFactory;
 import pl.radomiej.mmo.models.GameAction;
@@ -35,6 +36,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		actionFactories.put((byte) 1, new EventActionHandler());
 		actionFactories.put((byte) 2, new CreateCharacterActionFactory());
 		actionFactories.put((byte) 3, new AxisInputActionFactory());
+		actionFactories.put((byte) 4, new PhysicUpdateActionFactory());
 		actionFactories.put((byte) 5, new MoveToActionFactory());
 		actionFactories.put((byte) 6, new AttackActionFactory());
 		actionFactories.put((byte) 7, new RecoveryActionFactory());

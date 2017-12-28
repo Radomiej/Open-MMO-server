@@ -39,7 +39,7 @@ public enum BasicNetworkEngine {
 			public void run() {
 				update();
 			}
-		}, 0, (1000 / 60));
+		}, 0, (1000 / 5));
 
 		timerCreate = new Timer();
 		timerCreate.schedule(new TimerTask() {
@@ -56,23 +56,36 @@ public enum BasicNetworkEngine {
 
 		synchronized (BasicGameEngine.INSTANCE.getObjects()) {
 			for (NetworkObject networkObject : BasicGameEngine.INSTANCE.getObjects()) {
+				boolean sendGeo = true;
+				boolean sendUpdate = true;
+				boolean sendPhysic = true;
+				
 				byte[] updateObjectData = getUpdateDataFromNetworkObject(networkObject);
 				if (updateObjectData == null || updateObjectData.length <= 0) {
-					System.err.println("B³ad podczas zapisu do bytes");
-					continue;
-				}
+					sendUpdate = false;
+				}				
 				byte[] geoObjectData = getGeoDataFromNetworkObject(networkObject);
 				if (geoObjectData == null || geoObjectData.length <= 0) {
-					System.err.println("B³ad podczas zapisu do bytes");
-					continue;
+					sendGeo = false;
 				}
-				IoBuffer writeBufferUpdateEvent = IoBuffer.wrap(updateObjectData);
-				IoBuffer writeBufferGeoEvent = IoBuffer.wrap(geoObjectData);
+				byte[] physicObjectData = getPhysicDataFromNetworkObject(networkObject);
+				if (physicObjectData == null || physicObjectData.length <= 0) {
+					sendPhysic = false;
+				}
+				
+				IoBuffer writeBufferUpdateEvent = null;
+				IoBuffer writeBufferGeoEvent = null;
+				IoBuffer writeBufferPhysicEvent = null;
+				
+				if(sendUpdate) writeBufferUpdateEvent = IoBuffer.wrap(updateObjectData);
+				if(sendGeo) writeBufferGeoEvent = IoBuffer.wrap(geoObjectData);
+				if(sendPhysic) writeBufferPhysicEvent = IoBuffer.wrap(physicObjectData);
 
 				synchronized (sessions) {
 					for (IoSession session : sessions) {
-						session.write(writeBufferUpdateEvent);
-						session.write(writeBufferGeoEvent);
+						if(sendUpdate) session.write(writeBufferUpdateEvent);
+						if(sendGeo) session.write(writeBufferGeoEvent);
+						if(sendPhysic) session.write(writeBufferPhysicEvent);
 					}
 				}
 			}
@@ -93,7 +106,19 @@ public enum BasicNetworkEngine {
 		}
 	}
 
+	private byte[] getPhysicDataFromNetworkObject(NetworkObject networkObject) {
+		if(!networkObject.isNewPhysicData()){
+			return null;
+		}
+		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 4);
+		networkObject.getPhysicData(udpEventDatagram);
+		return udpEventDatagram.toBytes();
+	}
+
 	private byte[] getGeoDataFromNetworkObject(NetworkObject networkObject) {
+		if(!networkObject.isNewGeoData()){
+			return null;
+		}
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 5);
 		networkObject.getGeoData(udpEventDatagram);
 		return udpEventDatagram.toBytes();

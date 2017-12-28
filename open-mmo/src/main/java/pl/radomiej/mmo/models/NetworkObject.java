@@ -8,6 +8,10 @@ public abstract class NetworkObject {
 	public int owner;
 	public abstract byte getUpdateData(UdpEventDatagram udpEventDatagram);
 	public abstract void getGeoData(UdpEventDatagram udpEventDatagram);
+	public abstract void getPhysicData(UdpEventDatagram udpEventDatagram);
 	public abstract void getCreateData(UdpEventDatagram udpEventDatagram);
+	public abstract boolean isNewGeoData();
+	public abstract boolean isNewUpdateData();
+	public abstract boolean isNewPhysicData();
 	
 }

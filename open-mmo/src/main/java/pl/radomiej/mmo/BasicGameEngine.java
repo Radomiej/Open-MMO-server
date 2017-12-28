@@ -13,12 +13,14 @@ import pl.radomiej.mmo.actions.AttackAction;
 import pl.radomiej.mmo.actions.AxisInputAction;
 import pl.radomiej.mmo.actions.CreateCharacterAction;
 import pl.radomiej.mmo.actions.MoveToAction;
+import pl.radomiej.mmo.actions.PhysicUpdateAction;
 import pl.radomiej.mmo.actions.RecoveryAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.executors.AttackActionExecutor;
 import pl.radomiej.mmo.actions.executors.AxisInputActionExecutor;
 import pl.radomiej.mmo.actions.executors.CreateCharacterActionExecutor;
 import pl.radomiej.mmo.actions.executors.MoveToActionExecutor;
+import pl.radomiej.mmo.actions.executors.PhysicUpdateActionExecutor;
 import pl.radomiej.mmo.actions.executors.RecoveryActionExecutor;
 import pl.radomiej.mmo.actions.executors.RemoveCharacterActionExecutor;
 import pl.radomiej.mmo.models.GameAction;
@@ -39,6 +41,7 @@ public enum BasicGameEngine {
 		executors.put(CreateCharacterAction.class, new CreateCharacterActionExecutor());
 		executors.put(RemoveCharacterAction.class, new RemoveCharacterActionExecutor());
 		executors.put(MoveToAction.class, new MoveToActionExecutor());
+		executors.put(PhysicUpdateAction.class, new PhysicUpdateActionExecutor());
 		executors.put(AxisInputAction.class, new AxisInputActionExecutor());
 		executors.put(AttackAction.class, new AttackActionExecutor());
 		executors.put(RecoveryAction.class, new RecoveryActionExecutor());
@@ -112,6 +115,7 @@ public enum BasicGameEngine {
 	}
 
 	public void reset() {
+		System.out.println("RESET");
 		synchronized (objects) {
 			objects.clear();
 		}

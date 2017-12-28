@@ -1,5 +1,7 @@
 package pl.radomiej.mmo.models.specialized;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
 public class CharacterObject extends GeoObject {
@@ -7,6 +9,8 @@ public class CharacterObject extends GeoObject {
 	public float hp, hpMax, gold;
 	public float horizontal, vertical, jump;
 
+	private AtomicBoolean isNewUpdateData = new AtomicBoolean(true);
+	
 	@Override
 	public byte getUpdateData(UdpEventDatagram udpEventDatagram) {
 		udpEventDatagram.putFloat(horizontal);
@@ -27,6 +31,14 @@ public class CharacterObject extends GeoObject {
 		udpEventDatagram.putInt(kind);
 		super.getGeoData(udpEventDatagram);
 	}
+
+	@Override
+	public boolean isNewUpdateData() {
+		return isNewUpdateData.getAndSet(false);
+	}
 	
+	public void setNewUpdateData(){
+		isNewUpdateData.set(true);
+	}
 	
 }
