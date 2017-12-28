@@ -17,6 +17,8 @@ import org.apache.mina.core.session.IoSession;
 import pl.radomiej.mmo.models.NetworkObject;
 import pl.radomiej.mmo.models.specialized.GeoObject;
 import pl.radomiej.mmo.models.specialized.CharacterObject;
+import pl.radomiej.mmo.network.ACKEventManager;
+import pl.radomiej.mmo.network.NetworkDataStream;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
 public enum BasicNetworkEngine {
@@ -30,7 +32,9 @@ public enum BasicNetworkEngine {
 	private Timer timerCreate;
 
 	private long startTime = System.currentTimeMillis();
-	
+
+	private ACKEventManager ackManager = new ACKEventManager();
+
 	public void start() {
 		timerUpdate = new Timer();
 		timerUpdate.schedule(new TimerTask() {
@@ -46,10 +50,37 @@ public enum BasicNetworkEngine {
 
 			@Override
 			public void run() {
-//				resendCreateEvent();
+				resendNotAckEvents();
+			}
+		}, 0, 200);
+
+		timerCreate = new Timer();
+		timerCreate.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				// resendCreateEvent();
 				sendCurrentTime();
 			}
 		}, 0, 1000);
+	}
+
+	protected void resendNotAckEvents() {
+		Set<Integer> eventIds = ackManager.getNotAckEventsId();
+		for (Integer eventId : eventIds) {
+			IoSession session = ackManager.getSessionByEventId(eventId);
+			UdpEventDatagram datagram = ackManager.getUdpEventDatagramByEventId(eventId);
+			// sendEventRaw(datagram, false);
+
+			IoBuffer writeBuffer = IoBuffer.wrap(datagram.toBytes());
+			session.write(writeBuffer);
+		}
+
+		if (eventIds.size() > 0)
+
+		{
+			System.out.println("Resend events: " + eventIds.size());
+		}
 	}
 
 	protected void update() {
@@ -59,11 +90,11 @@ public enum BasicNetworkEngine {
 				boolean sendGeo = true;
 				boolean sendUpdate = true;
 				boolean sendPhysic = true;
-				
+
 				byte[] updateObjectData = getUpdateDataFromNetworkObject(networkObject);
 				if (updateObjectData == null || updateObjectData.length <= 0) {
 					sendUpdate = false;
-				}				
+				}
 				byte[] geoObjectData = getGeoDataFromNetworkObject(networkObject);
 				if (geoObjectData == null || geoObjectData.length <= 0) {
 					sendGeo = false;
@@ -72,20 +103,26 @@ public enum BasicNetworkEngine {
 				if (physicObjectData == null || physicObjectData.length <= 0) {
 					sendPhysic = false;
 				}
-				
+
 				IoBuffer writeBufferUpdateEvent = null;
 				IoBuffer writeBufferGeoEvent = null;
 				IoBuffer writeBufferPhysicEvent = null;
-				
-				if(sendUpdate) writeBufferUpdateEvent = IoBuffer.wrap(updateObjectData);
-				if(sendGeo) writeBufferGeoEvent = IoBuffer.wrap(geoObjectData);
-				if(sendPhysic) writeBufferPhysicEvent = IoBuffer.wrap(physicObjectData);
+
+				if (sendUpdate)
+					writeBufferUpdateEvent = IoBuffer.wrap(updateObjectData);
+				if (sendGeo)
+					writeBufferGeoEvent = IoBuffer.wrap(geoObjectData);
+				if (sendPhysic)
+					writeBufferPhysicEvent = IoBuffer.wrap(physicObjectData);
 
 				synchronized (sessions) {
 					for (IoSession session : sessions) {
-						if(sendUpdate) session.write(writeBufferUpdateEvent);
-						if(sendGeo) session.write(writeBufferGeoEvent);
-						if(sendPhysic) session.write(writeBufferPhysicEvent);
+						if (sendUpdate)
+							session.write(writeBufferUpdateEvent);
+						if (sendGeo)
+							session.write(writeBufferGeoEvent);
+						if (sendPhysic)
+							session.write(writeBufferPhysicEvent);
 					}
 				}
 			}
@@ -93,21 +130,8 @@ public enum BasicNetworkEngine {
 
 	}
 
-	public void sendEvent(int receipent, byte type, byte[] data) {
-		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, type, data.length, data);
-		IoBuffer writeBuffer = IoBuffer.wrap(udpEventDatagram.toBytes());
-
-		synchronized (sessions) {
-			for (IoSession session : sessions) {
-				// System.out.println("SendEvent: " + session + " receipent: " +
-				// receipent);
-				session.write(writeBuffer);
-			}
-		}
-	}
-
 	private byte[] getPhysicDataFromNetworkObject(NetworkObject networkObject) {
-		if(!networkObject.isNewPhysicData()){
+		if (!networkObject.isNewPhysicData()) {
 			return null;
 		}
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 4);
@@ -116,7 +140,7 @@ public enum BasicNetworkEngine {
 	}
 
 	private byte[] getGeoDataFromNetworkObject(NetworkObject networkObject) {
-		if(!networkObject.isNewGeoData()){
+		if (!networkObject.isNewGeoData()) {
 			return null;
 		}
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 5);
@@ -175,7 +199,6 @@ public enum BasicNetworkEngine {
 	private byte[] getCreateDataFromNetworkObject(NetworkObject networkObject) {
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 2);
 		networkObject.getCreateData(udpEventDatagram);
-		
 
 		return udpEventDatagram.toBytes();
 	}
@@ -199,7 +222,7 @@ public enum BasicNetworkEngine {
 		byte[] data = udpEventDatagram.toBytes();
 		IoBuffer writeBuffer = IoBuffer.wrap(data);
 		ownerSession.write(writeBuffer);
-//		System.out.println("Wysy³am Ownership");
+		// System.out.println("Wysy³am Ownership");
 	}
 
 	public void sendRemoveEvent(int removeObjectId) {
@@ -216,15 +239,15 @@ public enum BasicNetworkEngine {
 			}
 		}
 	}
-	
+
 	public void sendCreateEvent(NetworkObject networkObject) {
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 2);
 		networkObject.getCreateData(udpEventDatagram);
-		
+
 		byte[] data = udpEventDatagram.toBytes();
 		IoBuffer writeBuffer = IoBuffer.wrap(data);
 
-//		System.out.println("Wysy³am CreateEvent: " + udpEventDatagram);
+		// System.out.println("Wysy³am CreateEvent: " + udpEventDatagram);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
@@ -241,7 +264,7 @@ public enum BasicNetworkEngine {
 		byte[] data = udpEventDatagram.toBytes();
 		IoBuffer writeBuffer = IoBuffer.wrap(data);
 
-//		System.out.println("Wysy³am CurrentTime: " + currentTime);
+		// System.out.println("Wysy³am CurrentTime: " + currentTime);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
@@ -249,18 +272,49 @@ public enum BasicNetworkEngine {
 		}
 	}
 
-	public int getServerTime(){
+	public int getServerTime() {
 		int time = (int) (System.currentTimeMillis() - startTime);
 		return time;
 	}
 
-	public void sendEvent(int receipent, byte[] dataArray) {
+	public void sendUdpEvent(int receipent, byte type, byte[] data) {
+		if (type == 1) {
+			sendEvent(receipent, data);
+			return;
+		}
 
-		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, (byte) 1, dataArray.length, dataArray);
-		byte[] data = udpEventDatagram.toBytes();
-		IoBuffer writeBuffer = IoBuffer.wrap(data);
+		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, type, data.length, data);
+		IoBuffer writeBuffer = IoBuffer.wrap(udpEventDatagram.toBytes());
+
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
+				// System.out.println("SendEvent: " + session + " receipent: " +
+				// receipent);
+				session.write(writeBuffer);
+			}
+		}
+	}
+
+	public void sendEvent(int receipent, byte[] dataArray) {
+		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, (byte) 1, dataArray.length, dataArray);
+
+		sendEventRaw(udpEventDatagram, true);
+	}
+
+	private void sendEventRaw(UdpEventDatagram udpEventDatagram, boolean addToAckManger) {
+		byte[] data = udpEventDatagram.getData();
+		
+		synchronized (sessions) {
+			for (IoSession session : sessions) {
+				int eventId = ackManager.getNextId();
+				NetworkDataStream nds = new NetworkDataStream();
+				nds.PutNextInteger(eventId);
+				nds.PutNextBytes(data);
+				byte[] content = nds.getDataArray();
+				
+				UdpEventDatagram ued = new UdpEventDatagram(udpEventDatagram.receipent, udpEventDatagram.type, content.length, content);
+				IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
+				ackManager.registerEvent(eventId, session, udpEventDatagram);
 				session.write(writeBuffer);
 			}
 		}
@@ -270,6 +324,14 @@ public enum BasicNetworkEngine {
 		synchronized (sessions) {
 			return sessions.size();
 		}
+	}
+
+	public ACKEventManager getAckManager() {
+		return ackManager;
+	}
+
+	public void setAckManager(ACKEventManager ackManager) {
+		this.ackManager = ackManager;
 	}
 
 }

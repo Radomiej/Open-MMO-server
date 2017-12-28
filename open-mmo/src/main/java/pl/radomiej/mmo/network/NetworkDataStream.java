@@ -61,6 +61,10 @@ public class NetworkDataStream {
 		data = (byte[]) ArrayUtils.addAll(data, intArray);
 	}
 
+	public void PutNextBytes(byte[] contentToAdd) {
+		data = (byte[]) ArrayUtils.addAll(data, contentToAdd);
+	}
+
 	public byte[] getDataArray() {
 		byte[] result = Arrays.copyOf(data, data.length);
         return result;

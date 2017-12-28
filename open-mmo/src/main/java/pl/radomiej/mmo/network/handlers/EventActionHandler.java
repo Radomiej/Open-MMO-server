@@ -11,7 +11,7 @@ public class EventActionHandler implements ActionFactory {
 
 	@Override
 	public GameAction createGameActionFromNetworkEvent(UdpEventDatagram datagram, IoSession session) {
-		BasicNetworkEngine.INSTANCE.sendEvent(datagram.receipent, (byte)1, datagram.data);
+		BasicNetworkEngine.INSTANCE.sendUdpEvent(datagram.receipent, (byte)1, datagram.data);
 		return null;
 	}
 

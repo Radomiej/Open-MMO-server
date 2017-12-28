@@ -25,12 +25,13 @@ import pl.radomiej.mmo.actions.factory.PhysicUpdateActionFactory;
 import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.actions.factory.RemoveCharacterActionFactory;
 import pl.radomiej.mmo.models.GameAction;
+import pl.radomiej.mmo.network.ACKEventManager;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
 public class UdpGameEventHandler extends IoHandlerAdapter {
 
 	private Map<Byte, ActionFactory> actionFactories = new HashMap<>();
-
+	
 	public UdpGameEventHandler() {
 		actionFactories.put((byte) 0, new SystemActionHandler());
 		actionFactories.put((byte) 1, new EventActionHandler());
@@ -40,6 +41,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		actionFactories.put((byte) 5, new MoveToActionFactory());
 		actionFactories.put((byte) 6, new AttackActionFactory());
 		actionFactories.put((byte) 7, new RecoveryActionFactory());
+		actionFactories.put((byte) 254, new ACKHandler(BasicNetworkEngine.INSTANCE.getAckManager()));
 		actionFactories.put((byte) 255, new RemoveCharacterActionFactory());
 	}
 
