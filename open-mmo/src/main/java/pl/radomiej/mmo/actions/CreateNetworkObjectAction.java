@@ -4,13 +4,13 @@ import org.apache.mina.core.session.IoSession;
 
 import pl.radomiej.mmo.models.GameAction;
 
-public class CreateCharacterAction extends GameAction {
+public class CreateNetworkObjectAction extends GameAction {
 	public final IoSession ownerSession;
 	public final int kind;
 
 	public float x, y, z;
 
-	public CreateCharacterAction(IoSession ownerSession, int kind) {
+	public CreateNetworkObjectAction(IoSession ownerSession, int kind) {
 		this.ownerSession = ownerSession;
 		this.kind = kind;
 	}

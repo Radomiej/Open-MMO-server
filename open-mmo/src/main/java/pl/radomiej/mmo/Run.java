@@ -14,7 +14,7 @@ import org.apache.mina.transport.socket.DatagramSessionConfig;
 import org.apache.mina.transport.socket.nio.NioDatagramAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
-import pl.radomiej.mmo.network.handlers.UdpGameEventHandler;
+import pl.radomiej.mmo.network.UdpGameEventHandler;
 
 public class Run {
 

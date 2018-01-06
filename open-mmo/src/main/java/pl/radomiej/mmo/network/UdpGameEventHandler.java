@@ -1,4 +1,4 @@
-package pl.radomiej.mmo.network.handlers;
+package pl.radomiej.mmo.network;
 
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -13,20 +13,23 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 
 import pl.radomiej.mmo.ActionFactory;
+import pl.radomiej.mmo.ActionHelper;
 import pl.radomiej.mmo.BasicGameEngine;
 import pl.radomiej.mmo.BasicNetworkEngine;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.AxisInputActionFactory;
-import pl.radomiej.mmo.actions.factory.CreateCharacterActionFactory;
+import pl.radomiej.mmo.actions.factory.CreateNetworkObjectActionFactory;
 import pl.radomiej.mmo.actions.factory.MoveToActionFactory;
 import pl.radomiej.mmo.actions.factory.PhysicUpdateActionFactory;
 import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.actions.factory.RemoveCharacterActionFactory;
 import pl.radomiej.mmo.models.GameAction;
-import pl.radomiej.mmo.network.ACKEventManager;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
+import pl.radomiej.mmo.network.handlers.ACKHandler;
+import pl.radomiej.mmo.network.handlers.EventActionHandler;
+import pl.radomiej.mmo.network.handlers.SystemActionHandler;
 
 public class UdpGameEventHandler extends IoHandlerAdapter {
 
@@ -35,7 +38,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 	public UdpGameEventHandler() {
 		actionFactories.put((byte) 0, new SystemActionHandler());
 		actionFactories.put((byte) 1, new EventActionHandler());
-		actionFactories.put((byte) 2, new CreateCharacterActionFactory());
+		actionFactories.put((byte) 2, new CreateNetworkObjectActionFactory());
 		actionFactories.put((byte) 3, new AxisInputActionFactory());
 		actionFactories.put((byte) 4, new PhysicUpdateActionFactory());
 		actionFactories.put((byte) 5, new MoveToActionFactory());
@@ -52,8 +55,7 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		BasicNetworkEngine.INSTANCE.addSession(session);
 		System.out.println("sessionCreated: " + remoteAddress);
 
-		CreateCharacterAction createPlayerAction = new CreateCharacterAction(session, 0);
-		BasicGameEngine.INSTANCE.addGameAction(createPlayerAction);
+		BasicNetworkEngine.INSTANCE.resendAddressedCreateEvents(session);
 	}
 
 	@Override
@@ -67,15 +69,9 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 			buffer.get(content);
 
 			UdpEventDatagram datagram = new UdpEventDatagram(receipent, type, lenght, content);
-			// System.out.println("messageReceived: " + datagram);
+//			System.out.println("messageReceived: " + datagram);
 
-			ActionFactory actionFactory = actionFactories.get(type);
-			if (actionFactory != null) {
-				GameAction gameAction = actionFactory.createGameActionFromNetworkEvent(datagram, session);
-				if (gameAction != null) {
-					BasicGameEngine.INSTANCE.addGameAction(gameAction);
-				}
-			}
+			ActionHelper.INSTANCE.proccesByteAction(type, actionFactories, datagram, session);
 
 		}
 
@@ -87,8 +83,8 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		BasicNetworkEngine.INSTANCE.removeSession(session);
 		System.out.println("sessionClosed: " + remoteAddress);
 		
-		RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
-		BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
+//		RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
+//		BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
 		
 		if(BasicNetworkEngine.INSTANCE.sessionsCount() == 0){
 			BasicGameEngine.INSTANCE.reset();

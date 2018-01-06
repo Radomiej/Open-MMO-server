@@ -11,14 +11,16 @@ import java.util.TimerTask;
 
 import pl.radomiej.mmo.actions.AttackAction;
 import pl.radomiej.mmo.actions.AxisInputAction;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
+import pl.radomiej.mmo.actions.CreatePlayerObjectAction;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.actions.PhysicUpdateAction;
 import pl.radomiej.mmo.actions.RecoveryAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.executors.AttackActionExecutor;
 import pl.radomiej.mmo.actions.executors.AxisInputActionExecutor;
-import pl.radomiej.mmo.actions.executors.CreateCharacterActionExecutor;
+import pl.radomiej.mmo.actions.executors.CreateNetworkObjectActionExecutor;
+import pl.radomiej.mmo.actions.executors.CreatePlayerObjectActionExecutor;
 import pl.radomiej.mmo.actions.executors.MoveToActionExecutor;
 import pl.radomiej.mmo.actions.executors.PhysicUpdateActionExecutor;
 import pl.radomiej.mmo.actions.executors.RecoveryActionExecutor;
@@ -38,7 +40,8 @@ public enum BasicGameEngine {
 	private Timer timer;
 
 	public void start() {
-		executors.put(CreateCharacterAction.class, new CreateCharacterActionExecutor());
+		executors.put(CreateNetworkObjectAction.class, new CreateNetworkObjectActionExecutor());
+		executors.put(CreatePlayerObjectAction.class, new CreatePlayerObjectActionExecutor());
 		executors.put(RemoveCharacterAction.class, new RemoveCharacterActionExecutor());
 		executors.put(MoveToAction.class, new MoveToActionExecutor());
 		executors.put(PhysicUpdateAction.class, new PhysicUpdateActionExecutor());

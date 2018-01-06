@@ -3,13 +3,13 @@ package pl.radomiej.mmo.actions.factory;
 import org.apache.mina.core.session.IoSession;
 
 import pl.radomiej.mmo.ActionFactory;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.network.NetworkDataStream;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
-public class CreateCharacterActionFactory implements ActionFactory {
+public class CreateNetworkObjectActionFactory implements ActionFactory {
 
 	@Override
 	public GameAction createGameActionFromNetworkEvent(UdpEventDatagram datagram, IoSession session) {
@@ -22,7 +22,7 @@ public class CreateCharacterActionFactory implements ActionFactory {
 		
 //		System.out.println("character create kind: " + kind);
 		
-		CreateCharacterAction createCharacterAction = new CreateCharacterAction(session, kind);
+		CreateNetworkObjectAction createCharacterAction = new CreateNetworkObjectAction(session, kind);
 		createCharacterAction.setPosition(x, y, z);
 		
 		return createCharacterAction;

@@ -3,7 +3,7 @@ package pl.radomiej.mmo.actions.factory;
 import org.apache.mina.core.session.IoSession;
 
 import pl.radomiej.mmo.ActionFactory;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.models.GameAction;

@@ -4,7 +4,7 @@ import pl.radomiej.mmo.ActionExecutor;
 import pl.radomiej.mmo.BasicGameEngine;
 import pl.radomiej.mmo.BasicNetworkEngine;
 import pl.radomiej.mmo.actions.AttackAction;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.models.NetworkObject;
@@ -45,7 +45,7 @@ public class AttackActionExecutor implements ActionExecutor {
 		nds.PutNextFloat(attackAction.z);
 		
 		BasicNetworkEngine.INSTANCE.sendEvent(lifableObject.id, nds.getDataArray());
-		
+		System.out.println("Zadaje obra¿enia: " + attackAction.dmg + " pozostalo hp: " + lifableObject.hp + " lifable id: " + lifableObject.id);
 		return true;
 	}
 

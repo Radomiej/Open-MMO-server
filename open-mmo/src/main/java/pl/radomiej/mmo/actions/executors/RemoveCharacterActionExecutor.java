@@ -3,7 +3,7 @@ package pl.radomiej.mmo.actions.executors;
 import pl.radomiej.mmo.ActionExecutor;
 import pl.radomiej.mmo.BasicGameEngine;
 import pl.radomiej.mmo.BasicNetworkEngine;
-import pl.radomiej.mmo.actions.CreateCharacterAction;
+import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.models.specialized.CharacterObject;
