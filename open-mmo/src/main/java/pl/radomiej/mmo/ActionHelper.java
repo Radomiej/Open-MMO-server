@@ -20,6 +20,7 @@ public enum ActionHelper {
 			return gameAction;
 		}
 		
+		System.err.println("Byte Action Factories for type: " + type + " doesnt exist");
 		return null;
 	}
 	//TODO fix DRY
@@ -33,6 +34,7 @@ public enum ActionHelper {
 			return gameAction;
 		}
 		
+		System.err.println("Integer Action Factories for type: " + type + " doesnt exist");
 		return null;
 	}
 }

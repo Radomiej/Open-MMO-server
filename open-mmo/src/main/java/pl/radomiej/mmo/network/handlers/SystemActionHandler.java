@@ -12,6 +12,7 @@ import pl.radomiej.mmo.BasicNetworkEngine;
 import pl.radomiej.mmo.PlayerManager;
 import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.CreatePlayerObjectAction;
+import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.models.GameAction;
@@ -27,20 +28,10 @@ public class SystemActionHandler implements ActionFactory {
 	public static final int REQUEST_OWNER = 4;
 	public static final int DROP_OWNER = 5;
 	
-	public static final int CREATE_NETWORK_OBJECT = 11;
-	public static final int REMOVE_NETWORK_OBJECT = 12;
+	public static final int CREATE_NETWORK_OBJECT = 12;
+	public static final int REMOVE_NETWORK_OBJECT = 255;
 	
 	public static final int SEND_CURRENT_SERVER_TIME = 44; //Refer to SendServerTime
-	
-	public static final int ATTACK_EVENT = 1006; //Refer to SendServerTime
-	public static final int RECOVERY_EVENT = 1007; //Refer to SendServerTime
-	
-	private Map<Integer, ActionFactory> actionFactories = new HashMap<>();
-	
-	public SystemActionHandler() {
-		actionFactories.put(1006, new AttackActionFactory());
-		actionFactories.put(1007, new RecoveryActionFactory());
-	}
 	
 	
 	@Override
@@ -59,11 +50,18 @@ public class SystemActionHandler implements ActionFactory {
 			createNetworkObject(nds, session);
 		}else if(systemEventId == REQUEST_OWNER){
 			requestOwner(datagram.receipent, nds, session);
+		}else if(systemEventId == REMOVE_NETWORK_OBJECT){
+			destroyObject(datagram.receipent, nds, session);
 		}else{
-			ActionHelper.INSTANCE.proccesIntegerAction(systemEventId, actionFactories, datagram, session);
+			System.err.println("Unhandled ServerEvent type: " + systemEventId);
 		}
 		
 		return null;
+	}
+
+	private void destroyObject(int receipent, NetworkDataStream nds, IoSession session) {
+		RemoveCharacterAction removeCharacterAction = new RemoveCharacterAction(receipent);
+		BasicGameEngine.INSTANCE.addGameAction(removeCharacterAction);
 	}
 
 	private void loginToServer(NetworkDataStream nds, IoSession session) {

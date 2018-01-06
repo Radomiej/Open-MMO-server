@@ -13,7 +13,8 @@ public class AttackActionFactory implements ActionFactory {
 	@Override
 	public GameAction createGameActionFromNetworkEvent(UdpEventDatagram datagram, IoSession session) {
 		NetworkDataStream nds = datagram.getNetworkDataStream();
-
+		nds.skip(UdpEventDatagram.EVENT_HEADER_BYTES); //Skip header values: eventId, eventType, eventTarget
+		
 		int whoAttack = datagram.receipent;
 		int whoDeffend = nds.GetNextInteger();
 		float dmg = nds.GetNextFloat();

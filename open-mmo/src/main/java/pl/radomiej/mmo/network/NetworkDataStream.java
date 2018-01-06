@@ -51,6 +51,21 @@ public class NetworkDataStream {
         return value;
 	}
 	
+	public byte GetNextByte() {
+		if(cursor + 1 > data.length)
+        {
+            cursor += 1;
+            return 0;
+        }
+
+		byte[] valuesBytes = Arrays.copyOfRange(data, cursor, cursor + 1);
+
+		byte value = valuesBytes[0];
+        
+        cursor += 1;
+        return value;
+	}
+
 	public void PutNextFloat(float value) {
 		byte[] floatArray = float2ByteArray(value);
 		data = (byte[]) ArrayUtils.addAll(data, floatArray);
@@ -82,5 +97,9 @@ public class NetworkDataStream {
 
 	public static byte[] float2ByteArray(float value) {
 		return ByteBuffer.allocate(4).putFloat(value).array();
+	}
+
+	public void skip(int i) {
+		 cursor += i;		
 	}
 }

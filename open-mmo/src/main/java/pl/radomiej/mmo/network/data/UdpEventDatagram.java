@@ -8,6 +8,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import pl.radomiej.mmo.network.NetworkDataStream;
 
 public class UdpEventDatagram {
+	public final static int EVENT_HEADER_BYTES = 9;
+	public final static int SYSTEM_EVENT_HEADER_BYTES = 8;
+	
+	
 	public int receipent;
 	public byte type;
 	public int lenght;

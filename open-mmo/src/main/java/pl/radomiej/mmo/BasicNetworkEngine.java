@@ -300,7 +300,35 @@ public enum BasicNetworkEngine {
 	public void sendEvent(int receipent, byte[] dataArray) {
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, (byte) 1, dataArray.length, dataArray);
 
-		sendEventRaw(udpEventDatagram, true);
+		sendEventRaw(udpEventDatagram, null);
+	}
+
+	public void sendEventWithout(int receipent, byte[] dataArray, IoSession withoutSession) {
+		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(receipent, (byte) 1, dataArray.length, dataArray);
+
+		sendEventRaw(udpEventDatagram, withoutSession);
+	}
+
+	private void sendEventRaw(UdpEventDatagram udpEventDatagram, IoSession withoutSession) {
+		byte[] data = udpEventDatagram.getData();
+	
+		synchronized (sessions) {
+			for (IoSession session : sessions) {
+				if(session == withoutSession) continue;
+				
+				int eventId = ackManager.getNextId();
+				NetworkDataStream nds = new NetworkDataStream();
+				nds.PutNextInteger(eventId);
+				nds.PutNextBytes(data);
+				byte[] content = nds.getDataArray();
+	
+				UdpEventDatagram ued = new UdpEventDatagram(udpEventDatagram.receipent, udpEventDatagram.type,
+						content.length, content);
+				IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
+				ackManager.registerEvent(eventId, session, udpEventDatagram);
+				session.write(writeBuffer);
+			}
+		}
 	}
 
 	/**
@@ -330,28 +358,8 @@ public enum BasicNetworkEngine {
 
 		IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
 		receiver.write(writeBuffer);
-		System.out.println("Send System Event: " + ued);
+		//System.out.println("Send System Event: " + ued);
 
-	}
-
-	private void sendEventRaw(UdpEventDatagram udpEventDatagram, boolean addToAckManger) {
-		byte[] data = udpEventDatagram.getData();
-
-		synchronized (sessions) {
-			for (IoSession session : sessions) {
-				int eventId = ackManager.getNextId();
-				NetworkDataStream nds = new NetworkDataStream();
-				nds.PutNextInteger(eventId);
-				nds.PutNextBytes(data);
-				byte[] content = nds.getDataArray();
-
-				UdpEventDatagram ued = new UdpEventDatagram(udpEventDatagram.receipent, udpEventDatagram.type,
-						content.length, content);
-				IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
-				ackManager.registerEvent(eventId, session, udpEventDatagram);
-				session.write(writeBuffer);
-			}
-		}
 	}
 
 	public int sessionsCount() {

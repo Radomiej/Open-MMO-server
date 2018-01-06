@@ -16,6 +16,7 @@ public class RecoveryActionFactory implements ActionFactory {
 		NetworkDataStream nds = datagram.getNetworkDataStream();
 
 		int revoceryObject = datagram.receipent;
+		nds.skip(UdpEventDatagram.EVENT_HEADER_BYTES); //Skip header values: eventId, eventType, eventTarget
 		float recoveryHp = nds.GetNextFloat();
 
 		RecoveryAction recoveryAction = new RecoveryAction(revoceryObject, recoveryHp);

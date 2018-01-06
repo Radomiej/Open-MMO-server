@@ -38,12 +38,9 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 	public UdpGameEventHandler() {
 		actionFactories.put((byte) 0, new SystemActionHandler());
 		actionFactories.put((byte) 1, new EventActionHandler());
-		actionFactories.put((byte) 2, new CreateNetworkObjectActionFactory());
 		actionFactories.put((byte) 3, new AxisInputActionFactory());
 		actionFactories.put((byte) 4, new PhysicUpdateActionFactory());
 		actionFactories.put((byte) 5, new MoveToActionFactory());
-		actionFactories.put((byte) 6, new AttackActionFactory());
-		actionFactories.put((byte) 7, new RecoveryActionFactory());
 		actionFactories.put((byte) 254, new ACKHandler(BasicNetworkEngine.INSTANCE.getAckManager()));
 		actionFactories.put((byte) 255, new RemoveCharacterActionFactory());
 	}
