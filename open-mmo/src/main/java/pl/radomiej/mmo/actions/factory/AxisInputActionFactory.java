@@ -21,6 +21,7 @@ public class AxisInputActionFactory implements ActionFactory {
 		axisInputAction.horizontal = nds.GetNextFloat();
 		axisInputAction.vertical = nds.GetNextFloat();
 		axisInputAction.jump = nds.GetNextFloat();
+		axisInputAction.axis4 = nds.GetNextFloat();
 		
 		return axisInputAction;
 	}

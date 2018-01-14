@@ -40,7 +40,7 @@ public class CreatePlayerObjectActionExecutor implements ActionExecutor {
 		BasicNetworkEngine.INSTANCE.sendAddresedSystemEvent(createPlayerAction.ownerSession, player.id, SystemActionHandler.REGISTER_PLAYER_OBJECT , response);
 		BasicNetworkEngine.INSTANCE.sendCreateEvent(player);
 		
-		
+		System.out.println("Stworzono obiekt gracza o id: " + player.id);
 		
 		return true;
 	}

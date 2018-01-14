@@ -8,5 +8,6 @@ public class AxisInputAction extends GameAction {
 	public float horizontal;
 	public float vertical;
 	public float jump;
+	public float axis4;
 
 }

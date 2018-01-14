@@ -64,10 +64,9 @@ public enum BasicGameEngine {
 		List<GameAction> toRemove = new LinkedList<>();
 
 		synchronized (actions) {
-			for(int x = 0; x < actions.size(); x++){
+			for (int x = 0; x < actions.size(); x++) {
 				GameAction gameAction = actions.get(x);
-				// System.out.println("Wykonuje akcje: " +
-				// gameAction.getClass().getSimpleName());
+				//System.out.println("Wykonuje akcje: " + gameAction.getClass().getSimpleName());
 				ActionExecutor actionExecutor = executors.get(gameAction.getClass());
 				if (actionExecutor == null) {
 					toRemove.add(gameAction);
@@ -85,6 +84,7 @@ public enum BasicGameEngine {
 
 	public void addGameAction(GameAction gameAction) {
 		synchronized (actions) {
+			// System.out.println("Dodano akcje do gry: " + gameAction);
 			actions.add(gameAction);
 		}
 	}

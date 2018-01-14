@@ -2,6 +2,7 @@ package pl.radomiej.mmo.actions.executors;
 
 import pl.radomiej.mmo.ActionExecutor;
 import pl.radomiej.mmo.BasicGameEngine;
+import pl.radomiej.mmo.ServerSettings;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.actions.PhysicUpdateAction;
 import pl.radomiej.mmo.models.GameAction;
@@ -20,17 +21,17 @@ public class PhysicUpdateActionExecutor implements ActionExecutor{
 		
 		GeoObject geoObject = (GeoObject) findObject;
 		
-		boolean chnaged = false;
+		boolean changed = false;
 		
 		
-		if(Math.abs(geoObject.x - physicUpdateToAction.x) > DELTA_EPSILON) chnaged = true;
-		else if(Math.abs(geoObject.y - physicUpdateToAction.y) > DELTA_EPSILON) chnaged = true;
-		else if(Math.abs(geoObject.z - physicUpdateToAction.z) > DELTA_EPSILON) chnaged = true;
+		if(Math.abs(geoObject.x - physicUpdateToAction.x) > DELTA_EPSILON) changed = true;
+		else if(Math.abs(geoObject.y - physicUpdateToAction.y) > DELTA_EPSILON) changed = true;
+		else if(Math.abs(geoObject.z - physicUpdateToAction.z) > DELTA_EPSILON) changed = true;
 			
 			
 		
-		if(!chnaged) {
-			//return true;
+		if(!changed && ServerSettings.CURRENT.sendOnlyChangedGeoData) {
+			return true;
 		}
 		
 		geoObject.velX = physicUpdateToAction.x;

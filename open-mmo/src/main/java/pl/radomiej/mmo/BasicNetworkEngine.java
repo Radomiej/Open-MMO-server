@@ -46,7 +46,7 @@ public enum BasicNetworkEngine {
 			public void run() {
 				update();
 			}
-		}, 0, (1000 / 5));
+		}, 0, (1000 / 20));
 
 		timerCreate = new Timer();
 		timerCreate.schedule(new TimerTask() {
@@ -54,6 +54,7 @@ public enum BasicNetworkEngine {
 			@Override
 			public void run() {
 				resendNotAckEvents();
+				resendNearestGeo();
 			}
 		}, 0, 200);
 
@@ -66,6 +67,11 @@ public enum BasicNetworkEngine {
 				sendCurrentTime();
 			}
 		}, 0, 1000);
+	}
+
+	protected void resendNearestGeo() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	protected void resendNotAckEvents() {
@@ -169,18 +175,18 @@ public enum BasicNetworkEngine {
 	}
 
 	public void resendCreateEvent() {
+		
 		synchronized (BasicGameEngine.INSTANCE.getObjects()) {
 			for (NetworkObject networkObject : BasicGameEngine.INSTANCE.getObjects()) {
-				byte[] updateObjectData = getCreateDataFromNetworkObject(networkObject);
-				if (updateObjectData == null || updateObjectData.length <= 0) {
-					System.err.println("B³ad podczas zapisu do bytes");
-					continue;
-				}
-				IoBuffer writeBuffer = IoBuffer.wrap(updateObjectData);
+				NetworkDataStream dataStream  = getCreateDataFromNetworkObject(networkObject);
+//				if (updateObjectData == null || updateObjectData.length <= 0) {
+//					System.err.println("Blad podczas zapisu do bytes");
+//					continue;
+//				}
 
 				synchronized (sessions) {
 					for (IoSession session : sessions) {
-						session.write(writeBuffer);
+						sendAddresedSystemEvent(session, networkObject.id, SystemActionHandler.CREATE_NETWORK_OBJECT, dataStream);
 					}
 				}
 			}
@@ -190,22 +196,22 @@ public enum BasicNetworkEngine {
 	public void resendAddressedCreateEvents(IoSession session) {
 		synchronized (BasicGameEngine.INSTANCE.getObjects()) {
 			for (NetworkObject networkObject : BasicGameEngine.INSTANCE.getObjects()) {
-				byte[] updateObjectData = getCreateDataFromNetworkObject(networkObject);
-				if (updateObjectData == null || updateObjectData.length <= 0) {
-					System.err.println("B³ad podczas zapisu do bytes");
-					continue;
-				}
-				IoBuffer writeBuffer = IoBuffer.wrap(updateObjectData);
-				session.write(writeBuffer);
+				NetworkDataStream dataStream = getCreateDataFromNetworkObject(networkObject);
+//				if (updateObjectData == null || updateObjectData.length <= 0) {
+//					System.err.println("BÅ‚ad podczas zapisu do bytes");
+//					continue;
+//				}
+				
+				sendAddresedSystemEvent(session, networkObject.id, SystemActionHandler.CREATE_NETWORK_OBJECT, dataStream);
 			}
 		}
 	}
 
-	private byte[] getCreateDataFromNetworkObject(NetworkObject networkObject) {
-		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 2);
-		networkObject.getCreateData(udpEventDatagram);
+	private NetworkDataStream getCreateDataFromNetworkObject(NetworkObject networkObject) {
+		NetworkDataStream dataStream = new NetworkDataStream();
+		networkObject.getCreateData(dataStream);
 
-		return udpEventDatagram.toBytes();
+		return dataStream;
 	}
 
 	public void addSession(IoSession session) {
@@ -227,7 +233,7 @@ public enum BasicNetworkEngine {
 		byte[] data = udpEventDatagram.toBytes();
 		IoBuffer writeBuffer = IoBuffer.wrap(data);
 
-		System.out.println("Wysy³am RemoveEvent: " + udpEventDatagram);
+		System.out.println("Wysyï¿½am RemoveEvent: " + udpEventDatagram);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
@@ -236,16 +242,15 @@ public enum BasicNetworkEngine {
 	}
 
 	public void sendCreateEvent(NetworkObject networkObject) {
-		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 2);
-		networkObject.getCreateData(udpEventDatagram);
+		
+		NetworkDataStream dataStream = new NetworkDataStream();
+		networkObject.getCreateData(dataStream);
 
-		byte[] data = udpEventDatagram.toBytes();
-		IoBuffer writeBuffer = IoBuffer.wrap(data);
-
-		// System.out.println("Wysy³am CreateEvent: " + udpEventDatagram);
+		// System.out.println("Send CreateEvent: " + udpEventDatagram);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
-				session.write(writeBuffer);
+				sendAddresedSystemEvent(session, networkObject.id, SystemActionHandler.CREATE_NETWORK_OBJECT, dataStream);
+				//session.write(writeBuffer);
 			}
 		}
 	}
@@ -255,7 +260,7 @@ public enum BasicNetworkEngine {
 		NetworkDataStream nds = new NetworkDataStream();
 		nds.PutNextInteger(currentTime);
 
-		// System.out.println("Wysy³am CurrentTime: " + currentTime);
+		// System.out.println("Wysyï¿½am CurrentTime: " + currentTime);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				BasicNetworkEngine.INSTANCE.sendAddresedSystemEvent(session,

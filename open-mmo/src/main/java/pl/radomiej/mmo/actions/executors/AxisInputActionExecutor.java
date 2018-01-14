@@ -2,6 +2,7 @@ package pl.radomiej.mmo.actions.executors;
 
 import pl.radomiej.mmo.ActionExecutor;
 import pl.radomiej.mmo.BasicGameEngine;
+import pl.radomiej.mmo.ServerSettings;
 import pl.radomiej.mmo.actions.AxisInputAction;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.models.GameAction;
@@ -32,8 +33,7 @@ public class AxisInputActionExecutor implements ActionExecutor{
 		else if(Math.abs(playerObject.vertical - axisInputAction.vertical) > DELTA_EPSILON) chnanged = true;
 		else if(Math.abs(playerObject.jump - axisInputAction.jump) > DELTA_EPSILON) chnanged = true;
 		
-		if(!chnanged) {
-			System.out.println("Oszczdzam input event: " );
+		if(!chnanged && ServerSettings.CURRENT.sendOnlyChangedAxisData) {
 			return true;
 		}
 		
@@ -42,7 +42,7 @@ public class AxisInputActionExecutor implements ActionExecutor{
 		playerObject.horizontal = axisInputAction.horizontal;
 		playerObject.vertical = axisInputAction.vertical;
 		playerObject.jump = axisInputAction.jump;
-		
+		playerObject.axis4 = axisInputAction.axis4;
 //		System.out.println("playerObject: " + playerObject);
 		return true;
 	}
