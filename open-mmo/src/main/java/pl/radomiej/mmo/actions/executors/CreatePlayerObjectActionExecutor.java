@@ -31,12 +31,12 @@ public class CreatePlayerObjectActionExecutor implements ActionExecutor {
 				player.id);
 		
 		int playerId = (int) createPlayerAction.ownerSession.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_ID);
-		PlayerData playerData = PlayerManager.INSTANCE.getPlayerData(playerId);
+		PlayerData playerData = PlayerManager.INSTANCE.getOrCreatePlayerData(playerId);
 		playerData.setPlayerObjectId(player.id);
 		
 		NetworkDataStream response = new NetworkDataStream();
 		response.PutNextInteger(1); // 1 = success
-		//sssresponse.PutNextInteger(player.id); // Object Id
+		//response.PutNextInteger(player.id); // Object Id
 		BasicNetworkEngine.INSTANCE.sendAddresedSystemEvent(createPlayerAction.ownerSession, player.id, SystemActionHandler.REGISTER_PLAYER_OBJECT , response);
 		BasicNetworkEngine.INSTANCE.sendCreateEvent(player);
 		

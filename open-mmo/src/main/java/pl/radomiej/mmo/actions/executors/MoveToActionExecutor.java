@@ -2,6 +2,7 @@ package pl.radomiej.mmo.actions.executors;
 
 import pl.radomiej.mmo.ActionExecutor;
 import pl.radomiej.mmo.BasicGameEngine;
+import pl.radomiej.mmo.BasicNetworkEngine;
 import pl.radomiej.mmo.ServerSettings;
 import pl.radomiej.mmo.actions.MoveToAction;
 import pl.radomiej.mmo.models.GameAction;
@@ -18,7 +19,7 @@ public class MoveToActionExecutor implements ActionExecutor{
 		
 		NetworkObject findObject = basicGameEngine.findObjectById(moveToAction.objectId);
 		if(findObject == null) {
-			System.out.println("MoveToActionExecutor: Nie znaleziono obiektu id: " + moveToAction.objectId);
+			System.out.println("MoveToActionExecutor: Nie znaleziono obiektu id: " + moveToAction.objectId + " send DestroyMe event");
 			return true;
 		}
 		

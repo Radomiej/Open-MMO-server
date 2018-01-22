@@ -16,6 +16,13 @@ public abstract class GeoObject extends NetworkObject {
 	private AtomicBoolean geoChanged = new AtomicBoolean(true);
 	private AtomicBoolean physicChanged = new AtomicBoolean(true);
 
+	public GeoObject(int currentId) {
+		super(currentId);
+	}
+	
+	public GeoObject() {
+	}
+
 	@Override
 	public void getGeoData(UdpEventDatagram udpEventDatagram) {
 		udpEventDatagram.putFloat(x);

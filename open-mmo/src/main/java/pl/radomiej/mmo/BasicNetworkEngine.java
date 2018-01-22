@@ -19,6 +19,7 @@ import pl.radomiej.mmo.models.specialized.GeoObject;
 import pl.radomiej.mmo.models.specialized.CharacterObject;
 import pl.radomiej.mmo.network.ACKEventManager;
 import pl.radomiej.mmo.network.NetworkDataStream;
+import pl.radomiej.mmo.network.PlayerEventHistory;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 import pl.radomiej.mmo.network.handlers.SystemActionHandler;
 
@@ -27,7 +28,8 @@ public enum BasicNetworkEngine {
 
 	public static final String SESSION_ATTRIBUTE_PLAYER_ID = "PLAYER_ID";
 	public static final String SESSION_ATTRIBUTE_PLAYER_OBJECT_ID = "PLAYER_OBJECT_ID";
-
+	public static final String SESSION_ATTRIBUTE_EVENTS_HISTORY = "EVENTS_HISTORY";
+	
 	private Set<IoSession> sessions = Collections.synchronizedSet(new HashSet<>());
 
 	private Timer timerUpdate;
@@ -215,6 +217,9 @@ public enum BasicNetworkEngine {
 	}
 
 	public void addSession(IoSession session) {
+		PlayerEventHistory peh = new PlayerEventHistory();
+		session.setAttribute(SESSION_ATTRIBUTE_EVENTS_HISTORY, peh);
+		
 		synchronized (sessions) {
 			sessions.add(session);
 		}
@@ -237,6 +242,23 @@ public enum BasicNetworkEngine {
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
 				session.write(writeBuffer);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param playerObjectId
+	 * @param playerLogout true when player leave the server
+	 */
+	public void sendLogoutEvent(int playerObjectId, boolean playerLogout) {
+		NetworkDataStream dataStream = new NetworkDataStream();
+		if(playerLogout) dataStream.PutNextInteger(1);
+		
+		synchronized (sessions) {
+			for (IoSession session : sessions) {
+				sendAddresedSystemEvent(session, playerObjectId, SystemActionHandler.UNREGISTER_PLAYER_OBJECT, dataStream);
+				//session.write(writeBuffer);
 			}
 		}
 	}

@@ -13,6 +13,7 @@ import pl.radomiej.mmo.actions.factory.AttackActionFactory;
 import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.network.NetworkDataStream;
+import pl.radomiej.mmo.network.SessionHelpers;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
 public class EventActionHandler implements ActionFactory {
@@ -36,6 +37,8 @@ public class EventActionHandler implements ActionFactory {
 		byte receiverType = nds.GetNextByte();
 		BasicNetworkEngine.INSTANCE.sendAddressedAck(session, eventId);
 
+		if(SessionHelpers.exhaustedEventFromClient(session, eventId)) return null;
+		
 		if (receiverType == 0) {
 			ActionHelper.INSTANCE.proccesIntegerAction(eventType, actionFactories, datagram, session);
 		} else if (receiverType == 1) {

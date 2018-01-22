@@ -16,6 +16,7 @@ import pl.radomiej.mmo.ActionFactory;
 import pl.radomiej.mmo.ActionHelper;
 import pl.radomiej.mmo.BasicGameEngine;
 import pl.radomiej.mmo.BasicNetworkEngine;
+import pl.radomiej.mmo.ServerSettings;
 import pl.radomiej.mmo.actions.CreateNetworkObjectAction;
 import pl.radomiej.mmo.actions.RemoveCharacterAction;
 import pl.radomiej.mmo.actions.factory.AttackActionFactory;
@@ -80,10 +81,14 @@ public class UdpGameEventHandler extends IoHandlerAdapter {
 		BasicNetworkEngine.INSTANCE.removeSession(session);
 		System.out.println("sessionClosed: " + remoteAddress);
 		
-//		RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
-//		BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
+		int playerObjectId = (int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID);
+		BasicNetworkEngine.INSTANCE.sendLogoutEvent(playerObjectId, true);
+		if(ServerSettings.CURRENT.destroyPlayerObjectWhenLogout){
+			RemoveCharacterAction removePlayerAction = new RemoveCharacterAction((int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID));
+			BasicGameEngine.INSTANCE.addGameAction(removePlayerAction);
+		}
 		
-		if(BasicNetworkEngine.INSTANCE.sessionsCount() == 0){
+		if(BasicNetworkEngine.INSTANCE.sessionsCount() == 0 && ServerSettings.CURRENT.resetServerWhenNoPlayer){
 			BasicGameEngine.INSTANCE.reset();
 		}
 	}

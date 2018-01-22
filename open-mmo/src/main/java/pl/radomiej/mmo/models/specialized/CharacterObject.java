@@ -15,6 +15,13 @@ public class CharacterObject extends GeoObject {
 	private AtomicBoolean isNewUpdateData = new AtomicBoolean(true);
 	
 	
+	public CharacterObject(int currentId) {
+		super(currentId);
+	}
+
+	public CharacterObject() {
+	}
+
 	@Override
 	public byte getUpdateData(UdpEventDatagram udpEventDatagram) {
 		udpEventDatagram.putFloat(horizontal);
@@ -48,6 +55,11 @@ public class CharacterObject extends GeoObject {
 
 		int sendTime = BasicNetworkEngine.INSTANCE.getServerTime();
 		dataStream.PutNextInteger(sendTime);
+		
+		dataStream.PutNextInteger(owner);	
+		dataStream.PutNextInteger(ownerPlayer);	
+		dataStream.PutNextInteger(ownerGroup);	
+		dataStream.PutNextInteger(ownerFraction);	
 	}
 
 

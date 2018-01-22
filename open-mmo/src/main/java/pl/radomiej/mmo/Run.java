@@ -22,9 +22,8 @@ public class Run {
 
 	public static void main(String[] args) throws IOException {
 		RunGame();
-		
 		RunNetwork();
-		
+		System.out.println("OpenMMO Server START");
 	}
 
 	private static void RunGame() {

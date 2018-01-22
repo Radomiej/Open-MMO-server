@@ -18,6 +18,8 @@ import pl.radomiej.mmo.actions.factory.RecoveryActionFactory;
 import pl.radomiej.mmo.models.GameAction;
 import pl.radomiej.mmo.models.NetworkObject;
 import pl.radomiej.mmo.network.NetworkDataStream;
+import pl.radomiej.mmo.network.PlayerEventHistory;
+import pl.radomiej.mmo.network.SessionHelpers;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 import pl.radomiej.mmo.network.models.PlayerData;
 
@@ -32,6 +34,7 @@ public class SystemActionHandler implements ActionFactory {
 	public static final int REMOVE_NETWORK_OBJECT = 255;
 	
 	public static final int SEND_CURRENT_SERVER_TIME = 44; //Refer to SendServerTime
+	public static final int RESERVED_ID = 55; //Reserv IDs for clients 
 	
 	
 	@Override
@@ -40,6 +43,8 @@ public class SystemActionHandler implements ActionFactory {
 		int eventId = nds.GetNextInteger();
 		BasicNetworkEngine.INSTANCE.sendAddressedAck(session, eventId);
 		
+		if(SessionHelpers.exhaustedEventFromClient(session, eventId)) return null;
+		
 		int systemEventId = nds.GetNextInteger();
 		
 		if(systemEventId == LOGIN_TO_SERVER){
@@ -47,16 +52,28 @@ public class SystemActionHandler implements ActionFactory {
 		}else if(systemEventId == REGISTER_PLAYER_OBJECT){
 			registerPlayerObject(nds, session);
 		}else if(systemEventId == CREATE_NETWORK_OBJECT){
-			createNetworkObject(nds, session);
+			createNetworkObject(datagram.receipent, nds, session);
 		}else if(systemEventId == REQUEST_OWNER){
 			requestOwner(datagram.receipent, nds, session);
 		}else if(systemEventId == REMOVE_NETWORK_OBJECT){
 			destroyObject(datagram.receipent, nds, session);
+		}else if(systemEventId == RESERVED_ID){
+			reservIds(datagram.receipent, nds, session);
 		}else{
 			System.err.println("Unhandled ServerEvent type: " + systemEventId);
 		}
 		
 		return null;
+	}
+
+	private void reservIds(int receipent, NetworkDataStream nds, IoSession session) {
+		int reservedId = NetworkObject.lastId.getAndIncrement();
+		
+		NetworkDataStream response = new NetworkDataStream();
+		response.PutNextInteger(reservedId);
+		
+		BasicNetworkEngine.INSTANCE.sendAddresedSystemEvent(session, RESERVED_ID ,response);
+		System.out.println("Odesłano reserved id: " + reservedId);
 	}
 
 	private void destroyObject(int receipent, NetworkDataStream nds, IoSession session) {
@@ -100,7 +117,9 @@ public class SystemActionHandler implements ActionFactory {
 	private void requestOwner(int receipent, NetworkDataStream nds, IoSession session) {
 		NetworkObject networkObject = BasicGameEngine.INSTANCE.findObjectById(receipent);
 		if(networkObject == null) return;
-		if(networkObject.owner != 0) return;
+		
+		int priority = nds.GetNextInteger();
+		if(networkObject.owner != 0 && priority < 1) return;
 		
 		networkObject.owner = (int) session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_ID);
 		
@@ -109,16 +128,23 @@ public class SystemActionHandler implements ActionFactory {
 	
 	}
 	
-	private void createNetworkObject(NetworkDataStream nds, IoSession session){
+	private void createNetworkObject(int receipent, NetworkDataStream nds, IoSession session){
 		int kind = nds.GetNextInteger();
 		float x = nds.GetNextFloat();
 		float y = nds.GetNextFloat();
 		float z = nds.GetNextFloat();
 		
-		System.out.println("character create kind: " + kind);
+		float rotX = nds.GetNextFloat();
+		float rotY = nds.GetNextFloat();
+		float rotZ = nds.GetNextFloat();
 		
-		CreateNetworkObjectAction createCharacterAction = new CreateNetworkObjectAction(session, kind);
+		int currentId = nds.GetNextInteger();
+		int ownerObjectId = nds.GetNextInteger();
+		System.out.println("NetworkObject create kind: " + kind + " currentId: " + currentId + " owners: " + ownerObjectId);
+		
+		CreateNetworkObjectAction createCharacterAction = new CreateNetworkObjectAction(session, kind, currentId, ownerObjectId);
 		createCharacterAction.setPosition(x, y, z);
+		createCharacterAction.setRotation(rotX, rotY, rotZ);
 		
 		BasicGameEngine.INSTANCE.addGameAction(createCharacterAction);
 	}

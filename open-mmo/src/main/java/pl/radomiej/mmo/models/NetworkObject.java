@@ -6,11 +6,20 @@ import pl.radomiej.mmo.network.NetworkDataStream;
 import pl.radomiej.mmo.network.data.UdpEventDatagram;
 
 public abstract class NetworkObject {
-	private static AtomicInteger lastId = new AtomicInteger(1);
-	public int id = lastId.getAndIncrement();
+	public static AtomicInteger lastId = new AtomicInteger(1);
+	
+	public int id;
 	public int owner;
+	public int ownerPlayer;
 	public int ownerGroup;
 	public int ownerFraction;
+	
+	public NetworkObject() {
+		id = lastId.getAndIncrement();
+	}
+	public NetworkObject(int currentId) {
+		id = currentId;
+	}
 	
 	public abstract byte getUpdateData(UdpEventDatagram udpEventDatagram);
 	public abstract void getGeoData(UdpEventDatagram udpEventDatagram);

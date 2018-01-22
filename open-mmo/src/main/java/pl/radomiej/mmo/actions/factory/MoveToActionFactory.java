@@ -35,13 +35,20 @@ public class MoveToActionFactory implements ActionFactory {
 	private void IfPlayerObjectThenSaveCurrentPlayerPosition(IoSession session, MoveToAction moveToAction) {
 //		System.out.println(
 //				"MoveToActionFactory: " + session + " 2: " + BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID);
-		Object sessionAttribute = session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID);
-		if (sessionAttribute != null) {
-			int playerObjectId = (int) sessionAttribute;
-			if (sessionAttribute != null && ServerSettings.CURRENT.savePlayerPositions && playerObjectId != 0
+		Object sessionAttributePlayerObjectId = session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_OBJECT_ID);
+		Object sessionAttributePlayerId = session.getAttribute(BasicNetworkEngine.SESSION_ATTRIBUTE_PLAYER_ID);
+		if (sessionAttributePlayerObjectId != null) {
+			int playerObjectId = (int) sessionAttributePlayerObjectId;
+			int playerId = (int) sessionAttributePlayerId;
+			if (sessionAttributePlayerObjectId != null && ServerSettings.CURRENT.savePlayerPositions && playerObjectId != 0
 					&& playerObjectId == moveToAction.objectId) {
 
-				PlayerData playerData = PlayerManager.INSTANCE.getPlayerData(playerObjectId);
+				PlayerData playerData = PlayerManager.INSTANCE.getPlayerData(playerId);
+				if(playerData == null){
+					System.err.println("PlayerData not exist for: " + playerId);
+					return;
+				}
+				
 				playerData.setSpawnX(moveToAction.x);
 				playerData.setSpawnX(moveToAction.y);
 				playerData.setSpawnX(moveToAction.z);

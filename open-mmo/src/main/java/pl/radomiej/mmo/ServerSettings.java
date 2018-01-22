@@ -24,4 +24,8 @@ public enum ServerSettings {
 	 * Wysyłanie tylko zmieniajacych sie danych z AxisEvent
 	 */
 	public boolean sendOnlyChangedAxisData = false;
+	
+	public boolean resetServerWhenNoPlayer = false;
+	
+	public boolean destroyPlayerObjectWhenLogout = true;
 }

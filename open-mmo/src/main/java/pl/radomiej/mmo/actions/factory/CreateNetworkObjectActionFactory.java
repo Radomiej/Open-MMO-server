@@ -20,10 +20,16 @@ public class CreateNetworkObjectActionFactory implements ActionFactory {
 		float y = nds.GetNextFloat();
 		float z = nds.GetNextFloat();
 		
-//		System.out.println("character create kind: " + kind);
+		float rotX = nds.GetNextFloat();
+		float rotY = nds.GetNextFloat();
+		float rotZ = nds.GetNextFloat();
+		int currentId = nds.GetNextInteger();
+		int ownerObjectId = nds.GetNextInteger();
+		System.out.println("NetworkObject create kind: " + kind + " currentId: " + currentId);
 		
-		CreateNetworkObjectAction createCharacterAction = new CreateNetworkObjectAction(session, kind);
+		CreateNetworkObjectAction createCharacterAction = new CreateNetworkObjectAction(session, kind, currentId, ownerObjectId);
 		createCharacterAction.setPosition(x, y, z);
+		createCharacterAction.setRotation(rotX, rotY, rotZ);
 		
 		return createCharacterAction;
 	}

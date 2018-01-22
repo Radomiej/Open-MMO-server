@@ -17,6 +17,7 @@ public class RemoveCharacterActionExecutor implements ActionExecutor {
 		BasicGameEngine.INSTANCE.removeObject(removePlayerAction.removeObjectId);
 		BasicNetworkEngine.INSTANCE.sendRemoveEvent(removePlayerAction.removeObjectId);
 		
+		System.out.println("Usuwam obiekt id: " + removePlayerAction.removeObjectId);
 		return true;
 	}
 
