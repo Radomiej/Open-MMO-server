@@ -9,15 +9,19 @@ public class CreateNetworkObjectAction extends GameAction {
 	public final int kind;
 	public final int currentId;
 	public final int ownerObjectId;
+	public final int ownerGroupId;
+	public final int ownerFractionId;
 	
 	public float x, y, z;
 	public float rotX, rotY, rotZ;
 	
-	public CreateNetworkObjectAction(IoSession ownerSession, int kind,  int currentId, int ownerObjectId) {
+	public CreateNetworkObjectAction(IoSession ownerSession, int kind,  int currentId, int ownerObjectId, int ownerGroupId, int ownerFractionId) {
 		this.ownerSession = ownerSession;
 		this.kind = kind;
 		this.currentId = currentId;
 		this.ownerObjectId = ownerObjectId;
+		this.ownerGroupId = ownerGroupId;
+		this.ownerFractionId = ownerFractionId;
 	}
 
 	public void setPosition(float x, float y, float z) {

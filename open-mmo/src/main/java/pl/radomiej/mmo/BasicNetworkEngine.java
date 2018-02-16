@@ -162,6 +162,9 @@ public enum BasicNetworkEngine {
 	}
 
 	private byte[] getUpdateDataFromNetworkObject(NetworkObject networkObject) {
+		if (!networkObject.isNewUpdateData()) {
+			return null;
+		}
 		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(networkObject.id, (byte) 2);
 
 		byte type = networkObject.getUpdateData(udpEventDatagram);
@@ -232,17 +235,15 @@ public enum BasicNetworkEngine {
 	}
 
 	public void sendRemoveEvent(int removeObjectId) {
-		UdpEventDatagram udpEventDatagram = new UdpEventDatagram(removeObjectId, (byte) 255);
-		udpEventDatagram.putByte((byte) 0);
-
-		byte[] data = udpEventDatagram.toBytes();
-		IoBuffer writeBuffer = IoBuffer.wrap(data);
-
-		System.out.println("Wysy�am RemoveEvent: " + udpEventDatagram);
+		
+		NetworkDataStream eventData = new NetworkDataStream();
+		
+		System.out.println("Wysylam RemoveEvent: " + removeObjectId);
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
-				session.write(writeBuffer);
+				sendAddresedSystemEvent(session, removeObjectId, SystemActionHandler.REMOVE_NETWORK_OBJECT, eventData);
 			}
+			
 		}
 	}
 
@@ -358,6 +359,35 @@ public enum BasicNetworkEngine {
 		}
 	}
 
+	public void sendSystemEvent(int receipent, int systemEventId, NetworkDataStream eventData) {
+		synchronized (sessions) {
+			for (IoSession session : sessions) {
+				sendAddresedSystemEvent(session, receipent, systemEventId, eventData);
+			}
+		}
+		
+	}
+
+	public void sendAddresedSystemEvent(IoSession receiver, int receipent, int systemEventId,
+			NetworkDataStream eventData) {
+		byte[] data = eventData.getDataArray();
+		int eventId = ackManager.getNextId();
+	
+		NetworkDataStream nds = new NetworkDataStream();
+		nds.PutNextInteger(eventId);
+		nds.PutNextInteger(systemEventId);
+		nds.PutNextBytes(data);
+		data = nds.getDataArray();
+	
+		UdpEventDatagram ued = new UdpEventDatagram(receipent, (byte) 0, data.length, data);
+		ackManager.registerEvent(eventId, receiver, ued);
+	
+		IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
+		receiver.write(writeBuffer);
+		//System.out.println("Send System Event: " + ued);
+	
+	}
+
 	/**
 	 * Skrocona wersja metody do wysylania zdarzenia systemowego
 	 * 
@@ -367,26 +397,6 @@ public enum BasicNetworkEngine {
 	 */
 	public void sendAddresedSystemEvent(IoSession receiver, int systemEventId, NetworkDataStream eventData) {
 		sendAddresedSystemEvent(receiver, 0, systemEventId, eventData);
-	}
-
-	public void sendAddresedSystemEvent(IoSession receiver, int receipent, int systemEventId,
-			NetworkDataStream eventData) {
-		byte[] data = eventData.getDataArray();
-		int eventId = ackManager.getNextId();
-
-		NetworkDataStream nds = new NetworkDataStream();
-		nds.PutNextInteger(eventId);
-		nds.PutNextInteger(systemEventId);
-		nds.PutNextBytes(data);
-		data = nds.getDataArray();
-
-		UdpEventDatagram ued = new UdpEventDatagram(receipent, (byte) 0, data.length, data);
-		ackManager.registerEvent(eventId, receiver, ued);
-
-		IoBuffer writeBuffer = IoBuffer.wrap(ued.toBytes());
-		receiver.write(writeBuffer);
-		//System.out.println("Send System Event: " + ued);
-
 	}
 
 	public int sessionsCount() {
